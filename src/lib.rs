@@ -52,11 +52,30 @@ pub fn convert_png_to_jpg(png_data: &[u8]) -> Result<Vec<u8>, JsValue> {
             // IHDR values are not supported in jpeg so we have to strip them
             // it is basically the data about height, width, bitdepth and color type of the image i.e. Metadata
             "IHDR" => {
+                // error handling the data, bit depth and color type are 1 byte each not 4 which is
+                // asssumed by bigendian
+                // let mut ihdr = &data[..];
+                // width = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
+                // height = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
+                // bit_depth = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
+                // color_type = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
+
                 let mut ihdr = &data[..];
                 width = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
                 height = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
-                bit_depth = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
-                color_type = ihdr.read_u32::<BigEndian>().map_err(|e| e.to_string())?;
+                bit_depth = ihdr.read_u8().map_err(|e| e.to_string())?;
+                color_type = ihdr.read_u8().map_err(|e| e.to_string())?;
+
+                // there are further data in ihdr like compression filter_method and interlace,
+                // previous version was only accounting for linear scanline and not interlaced png,
+                // which still isnt being accounted.
+                let _compression = ihdr.read_u8().map_err(|e| e.to_string())?;
+                let _filter_method = ihdr.read_u8().map_err(|e| e.to_string())?;
+                let interlace = ihdr.read_u8().map_err(|e| e.to_string())?;
+
+                if interlace != 0 {
+                    return Err("Interlaced PNGs are not supported".into());
+                }
             }
 
             // actual image data required. Data Chunk

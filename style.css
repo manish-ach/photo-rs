@@ -1,0 +1,202 @@
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #333;
+    color: #eee;
+    overflow: hidden; /* Prevent scrollbars for the main layout */
+}
+
+.app-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+    background-color: #222;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+/* Menu Bar Styling */
+.menu-bar {
+    display: flex;
+    background-color: #444;
+    padding: 5px 10px;
+    border-bottom: 1px solid #555;
+    z-index: 100; /* Ensure menu is on top */
+}
+
+.menu-item {
+    position: relative;
+    padding: 5px 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.menu-item:hover {
+    background-color: #555;
+}
+
+.submenu, .sub-submenu {
+    display: none;
+    position: absolute;
+    background-color: #333;
+    border: 1px solid #555;
+    min-width: 150px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    z-index: 101; /* Above menu-bar */
+}
+
+.menu-item:hover > .submenu {
+    display: block;
+    top: 100%;
+    left: 0;
+}
+
+.submenu-item {
+    padding: 8px 15px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.submenu-item:hover {
+    background-color: #007bff;
+    color: white;
+}
+
+.submenu-with-arrow {
+    position: relative;
+}
+
+.submenu-with-arrow::after {
+    content: '▶';
+    position: absolute;
+    right: 10px;
+    color: #bbb;
+}
+
+.submenu-with-arrow:hover > .sub-submenu {
+    display: block;
+    top: 0;
+    left: 100%; /* Position to the right of the parent submenu item */
+}
+
+/* Main Content Layout */
+.main-content {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden; /* Handle overflow within main content */
+}
+
+/* Tools Panel */
+.tools-panel {
+    width: 60px;
+    background-color: #333;
+    border-right: 1px solid #555;
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    overflow-y: auto; /* Enable scrolling for tools if many */
+}
+
+.tool-group {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+    padding: 5px;
+    border: 1px solid #555;
+    border-radius: 5px;
+    background-color: #2a2a2a;
+}
+
+.tool-button {
+    background-color: #444;
+    color: white;
+    border: 1px solid #666;
+    border-radius: 3px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.tool-button:hover {
+    background-color: #007bff;
+    border-color: #0056b3;
+}
+
+/* Canvas Area */
+.canvas-area {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1a1a1a; /* Darker background for the canvas area */
+    position: relative;
+    overflow: auto; /* Allow scrolling if image is larger than view */
+}
+
+#image-canvas {
+    border: 1px solid #666;
+    max-width: 100%;
+    max-height: 100%;
+    display: block; /* Remove extra space below canvas */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+}
+
+#no-image-text {
+    position: absolute;
+    color: #888;
+    font-size: 1.2em;
+    text-align: center;
+}
+
+/* Properties Panel */
+.properties-panel {
+    width: 250px;
+    background-color: #333;
+    border-left: 1px solid #555;
+    padding: 10px;
+    overflow-y: auto; /* Enable scrolling for properties if many */
+}
+
+.properties-panel h3 {
+    color: #eee;
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #555;
+    padding-bottom: 5px;
+}
+
+.panel-section {
+    margin-bottom: 20px;
+}
+
+.panel-section h4 {
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+.properties-panel ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.properties-panel ul li, .adjustment-item {
+    background-color: #444;
+    padding: 8px 10px;
+    margin-bottom: 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.properties-panel ul li:hover, .adjustment-item:hover {
+    background-color: #555;
+}

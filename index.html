@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ImageForge - WASM Image Editor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="menu-bar">
+            <div class="menu-item">File
+                <div class="submenu">
+                    <div class="submenu-item" id="open-file">Open...</div>
+                    <div class="submenu-item">New</div>
+                    <div class="submenu-item submenu-with-arrow">Save As
+                        <div class="sub-submenu">
+                            <div class="submenu-item" id="save-as-jpg">JPEG</div>
+                            <div class="submenu-item" id="save-as-png">PNG</div>
+                            <div class="submenu-item" id="save-as-gif">GIF</div>
+                        </div>
+                    </div>
+                    <div class="submenu-item">Close</div>
+                    <div class="submenu-item">Exit</div>
+                </div>
+            </div>
+            <div class="menu-item">Edit
+                <div class="submenu">
+                    <div class="submenu-item">Undo</div>
+                    <div class="submenu-item">Redo</div>
+                    <div class="submenu-item">Cut</div>
+                    <div class="submenu-item">Copy</div>
+                    <div class="submenu-item">Paste</div>
+                </div>
+            </div>
+            <div class="menu-item">Image
+                <div class="submenu">
+                    <div class="submenu-item">Adjustments</div>
+                    <div class="submenu-item">Image Size...</div>
+                    <div class="submenu-item">Canvas Size...</div>
+                    <div class="submenu-item">Image Rotation</div>
+                </div>
+            </div>
+            <div class="menu-item">Layer
+                <div class="submenu">
+                    <div class="submenu-item">New Layer</div>
+                    <div class="submenu-item">Duplicate Layer</div>
+                    <div class="submenu-item">Delete Layer</div>
+                </div>
+            </div>
+            <div class="menu-item">Filter
+                <div class="submenu">
+                    <div class="submenu-item">Blur</div>
+                    <div class="submenu-item">Sharpen</div>
+                    <div class="submenu-item">Distort</div>
+                </div>
+            </div>
+            <div class="menu-item">View
+                <div class="submenu">
+                    <div class="submenu-item">Zoom In</div>
+                    <div class="submenu-item">Zoom Out</div>
+                    <div class="submenu-item">Actual Pixels</div>
+                </div>
+            </div>
+            <div class="menu-item">Help
+                <div class="submenu">
+                    <div class="submenu-item">About ImageForge</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="tools-panel">
+                <div class="tool-group">
+                    <button class="tool-button" title="Move Tool">🖐️</button>
+                    <button class="tool-button" title="Marquee Tool">◻️</button>
+                    <button class="tool-button" title="Lasso Tool">➿</button>
+                    <button class="tool-button" title="Magic Wand Tool">🪄</button>
+                </div>
+                <div class="tool-group">
+                    <button class="tool-button" title="Crop Tool">✂️</button>
+                    <button class="tool-button" title="Eyedropper Tool">💧</button>
+                    <button class="tool-button" title="Spot Healing Brush Tool">🩹</button>
+                    <button class="tool-button" title="Brush Tool">🖌️</button>
+                </div>
+                <div class="tool-group">
+                    <button class="tool-button" title="Clone Stamp Tool">🐑</button>
+                    <button class="tool-button" title="History Brush Tool">🕰️</button>
+                    <button class="tool-button" title="Eraser Tool">🧽</button>
+                    <button class="tool-button" title="Paint Bucket Tool">🪣</button>
+                </div>
+                <div class="tool-group">
+                    <button class="tool-button" title="Dodge Tool">🔆</button>
+                    <button class="tool-button" title="Burn Tool">⚫</button>
+                    <button class="tool-button" title="Pen Tool">✒️</button>
+                    <button class="tool-button" title="Type Tool">🅰️</button>
+                </div>
+                <div class="tool-group">
+                    <button class="tool-button" title="Path Selection Tool">➡️</button>
+                    <button class="tool-button" title="Rectangle Tool">▭</button>
+                    <button class="tool-button" title="Hand Tool">✋</button>
+                    <button class="tool-button" title="Zoom Tool">🔎</button>
+                </div>
+            </div>
+
+            <div class="canvas-area">
+                <input type="file" id="file-input" accept="image/png" style="display: none;">
+                <canvas id="image-canvas"></canvas>
+                <p id="no-image-text">Click "File > Open..." to load an image.</p>
+            </div>
+
+            <div class="properties-panel">
+                <h3>Properties</h3>
+                <div class="panel-section">
+                    <h4>Layers</h4>
+                    <ul id="layers-list">
+                        <li>Background</li>
+                    </ul>
+                </div>
+                <div class="panel-section">
+                    <h4>Adjustments</h4>
+                    <div class="adjustment-item">Brightness/Contrast</div>
+                    <div class="adjustment-item">Levels</div>
+                    <div class="adjustment-item">Curves</div>
+                </div>
+                <div class="panel-section">
+                    <h4>History</h4>
+                    <ul id="history-list">
+                        <li>Open Image</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import init, { convert_png_to_jpg } from './pkg/photo_rs.js';
+
+        let currentImageBitmap = null;
+
+        async function initializeWasm() {
+            try {
+                await init();
+                console.log("WASM initialized successfully.");
+            } catch (err) {
+                console.error("Error initializing WASM:", err);
+            }
+        }
+
+        initializeWasm();
+
+        const fileInput = document.getElementById('file-input');
+        const openFileButton = document.getElementById('open-file');
+        const saveAsJpgButton = document.getElementById('save-as-jpg');
+        const imageCanvas = document.getElementById('image-canvas');
+        const noImageText = document.getElementById('no-image-text');
+        const ctx = imageCanvas.getContext('2d');
+
+        openFileButton.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file && file.type.startsWith('image/png')) {
+                const arrayBuffer = await file.arrayBuffer();  // Save this for conversion
+                window.originalPngBuffer = new Uint8Array(arrayBuffer);  // Store globally or in a scoped variable
+
+                const img = new Image();
+                img.onload = () => {
+                    imageCanvas.width = img.width;
+                    imageCanvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    noImageText.style.display = 'none';
+                    createImageBitmap(img).then(bitmap => {
+                        currentImageBitmap = bitmap;
+                    });
+                };
+                img.src = URL.createObjectURL(file);
+            } else {
+                alert("Please select a PNG image file.");
+            }
+        });
+
+       saveAsJpgButton.addEventListener('click', async () => {
+            if (!window.originalPngBuffer) {
+                alert("No original PNG data available.");
+                return;
+            }
+
+            try {
+                console.log("Attempting to convert PNG to JPG using original buffer...");
+                const jpgData = convert_png_to_jpg(window.originalPngBuffer);
+                console.log("Conversion successful, JPG data length:", jpgData.length);
+
+                const blobJpg = new Blob([jpgData], { type: 'image/jpeg' });
+                const url = URL.createObjectURL(blobJpg);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'converted_image.jpg';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error("Error converting image:", error);
+                alert(`Error converting image: ${error}`);
+            }
+        });
+
+
+        // Placeholder for other save options
+        document.getElementById('save-as-png').addEventListener('click', () => {
+            alert("Save as PNG (Not implemented yet)");
+        });
+
+        document.getElementById('save-as-gif').addEventListener('click', () => {
+            alert("Save as GIF (Not implemented yet)");
+        });
+
+    </script>
+</body>
+</html>
